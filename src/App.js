@@ -73,6 +73,8 @@ const renderD3 = (optimizationResult, solutionIndex = 0, useFlowDistance = false
   }));
   console.log({ sol, links, nodes, flows: links.map(l => l.flow) });
 
+  //const flowDistanceFn = (d) => d.flow * d.distance * 0.2;
+  //const distanceFn = (d) => d.distance * 10
   const flowDistanceFn = (d) => d.flow * d.distance * 0.0001;
   const distanceFn = (d) => d.distance * 0.01
   const getDistance = useFlowDistance ? flowDistanceFn : distanceFn;
@@ -265,7 +267,8 @@ const App = () => {
         Solution Index: {solIndex}, Solution Quality:{" "}
         {optimizationResult?.solutions[solIndex].solution.quality}, Worker Id:{" "}
         {optimizationResult?.solutions[solIndex].workerId}, Created Solutions
-        (approx): {optimizationResult?.solutions[solIndex].createdSolutions}
+        (approx): {optimizationResult?.solutions[solIndex].createdSolutions},
+        {useFlowDistance ? "flowDistance" : "distance"}
       </span>
     </div>
   );
