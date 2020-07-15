@@ -10,7 +10,9 @@
     "lodash": "^4.17.15",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "react-vis": "^1.11.7",
+    "recompose": "^0.30.0"
   },
   "scripts": {
     "start": "react-scripts start",
