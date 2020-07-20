@@ -70,8 +70,8 @@ const getTransFormData = ({ xProp, yProp, useSolutionIndex }) => {
   }
 
   const dominationFilters = [
-    (a, b) => get(b, xProp) - get(a, xProp),
-    (a, b) => get(b, yProp) - get(a, yProp),
+    (a, b) => get(a, xProp) - get(b, xProp),
+    (a, b) => get(a, yProp) - get(b, yProp),
   ];
   return compose(
     getSolutionsToData({ xProp, yProp }),
@@ -97,7 +97,7 @@ const App = () => {
 
   useEffect(() => {
     if (!instance) {
-      fetch("input-nug30a-100000.jsonlog").then((response) =>
+      fetch("input-nug30a-1000000.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
@@ -122,7 +122,7 @@ const App = () => {
     "failureRiskSum",
     "singleFactoryFailureScore",
   ];
-  const plots = [];
+  let plots = [];
   solutionProps.forEach((a) => {
     solutionProps.forEach((b) => {
       plots.push({ xProp: a, yProp: b });
@@ -131,8 +131,8 @@ const App = () => {
       }
     });
   });
+  //plots = [{ xProp: "flowDistanceSum", yProp: "failureRiskSum" }]
   const groupedPlots = groupBy(plots, (p) => p.xProp);
-
   return (
     <div className="App">
       <div style={{ display: "flex", flexDirection: "column" }}>
