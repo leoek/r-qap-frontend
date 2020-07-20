@@ -97,7 +97,7 @@ const App = () => {
 
   useEffect(() => {
     if (!instance) {
-      fetch("input-nug30a-1000000.jsonlog").then((response) =>
+      fetch("input-nug30a-100000.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
@@ -132,7 +132,7 @@ const App = () => {
     });
   });
   //plots = [{ xProp: "flowDistanceSum", yProp: "failureRiskSum" }]
-  const groupedPlots = groupBy(plots, (p) => p.xProp);
+  const groupedPlots = groupBy(plots, (p) => p.yProp);
   return (
     <div className="App">
       <div style={{ display: "flex", flexDirection: "column" }}>
@@ -154,7 +154,7 @@ const App = () => {
                 <ScatterPlot
                   xTitle={getXTitle(options)}
                   yTitle={options.yProp}
-                  key={`${options.yProp}_${options.useSolutionIndex}`}
+                  key={`${options.xProp}_${options.useSolutionIndex}`}
                   type={options.yProp === options.xProp ? "MarkSeries" : undefined}
                   data={getTransFormData(options)(solutions)}
                 />
