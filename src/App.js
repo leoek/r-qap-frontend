@@ -54,7 +54,21 @@ const getSolutionsToData = ({ xProp, yProp }) => (solutions) =>
 const sortSolutions = (...iteratees) => (solutions) =>
   orderBy(solutions, ...iteratees);
 
-const getTransFormData = ({ xProp, yProp }) => {
+const getTransFormData = ({ xProp, yProp, useSolutionIndex }) => {
+  if (!xProp || xProp === yProp) {
+    return compose(
+      sortSolutions(["createdSolutions"], ["asc"]),
+      (solutions) =>
+        solutions.map((sol, i) => ({
+          ...sol,
+          x: useSolutionIndex ? i : get(sol, "createdSolutions"),
+          y: get(sol, yProp),
+          size: 1
+        })),
+      flattenSolutions
+    );
+  }
+
   const dominationFilters = [
     (a, b) => get(b, xProp) - get(a, xProp),
     (a, b) => get(b, yProp) - get(a, yProp),
@@ -67,14 +81,23 @@ const getTransFormData = ({ xProp, yProp }) => {
   );
 };
 
+const getXTitle = ({ xProp, yProp, useSolutionIndex }) => {
+  if (xProp === yProp){
+    if (useSolutionIndex){
+      return "solution #"
+    }
+    return "~createdSolutions"
+  }
+  return xProp;
+}
+
 const App = () => {
   const [instance, setInstance] = useState(null);
   const [solutions, setSolutions] = useState([]);
-  const [selectedSolution, setSelectedSolution] = useState(null);
 
   useEffect(() => {
     if (!instance) {
-      fetch("input-nug12a.jsonlog").then((response) =>
+      fetch("input-nug30a-100000.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
@@ -103,21 +126,36 @@ const App = () => {
   solutionProps.forEach((a) => {
     solutionProps.forEach((b) => {
       plots.push({ xProp: a, yProp: b });
+      if (a===b){
+        plots.push({ xProp: a, yProp: b, useSolutionIndex: true });
+      }
     });
   });
   const groupedPlots = groupBy(plots, (p) => p.xProp);
+
   return (
     <div className="App">
       <div style={{ display: "flex", flexDirection: "column" }}>
         {Object.keys(groupedPlots).map((key) => (
           <div style={{ display: "flex", flexDirection: "row" }} key={key}>
             {[
-              <div key="label" style={{ display: "flex", justifyContent: "center", width: 300, alignItems: "center" }}>
+              <div
+                key="label"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  width: 320,
+                  alignItems: "center",
+                }}
+              >
                 <span>{key}</span>
               </div>,
               ...groupedPlots[key].map((options) => (
                 <ScatterPlot
-                  key={options.yProp}
+                  xTitle={getXTitle(options)}
+                  yTitle={options.yProp}
+                  key={`${options.yProp}_${options.useSolutionIndex}`}
+                  type={options.yProp === options.xProp ? "MarkSeries" : undefined}
                   data={getTransFormData(options)(solutions)}
                 />
               )),
