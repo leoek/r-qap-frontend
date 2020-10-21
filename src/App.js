@@ -97,7 +97,7 @@ const App = () => {
 
   useEffect(() => {
     if (!instance) {
-      fetch("input-nug12a-100000.jsonlog").then((response) =>
+      fetch("nug12b-s10k.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
@@ -118,9 +118,9 @@ const App = () => {
   });
 
   const solutionProps = [
-    "flowDistanceSum",
-    "failureRiskSum",
-    "singleFactoryFailureScore",
+    "flowDistance",
+    "failureRisk",
+    "singleFactoryFailure",
   ];
   let plots = [];
   solutionProps.forEach((a) => {
