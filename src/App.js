@@ -17,6 +17,23 @@ const flattenSolutions = (solutions) =>
     ...solution,
   }));
 
+const filterBetterQuality = solutions => {
+  let best;
+  const result = [];
+  if (solutions.length < 1){
+    return result;
+  }
+  result.push(solutions[0]);
+  best = solutions[0]?.quality;
+  for (let i = 1; i < solutions.length; i++){
+    if (solutions[i]?.quality < best){
+      result.push(solutions[i]);
+      best = solutions[i]?.quality;
+    }
+  }
+  return result;
+}
+
 const filterNotDominatedSolutions = (filters) => (solutions) => {
   const result = [];
   solutions.forEach((currentSol) => {
@@ -54,14 +71,15 @@ const getSolutionsToData = ({ xProp, yProp }) => (solutions) =>
 const sortSolutions = (...iteratees) => (solutions) =>
   orderBy(solutions, ...iteratees);
 
-const getTransFormData = ({ xProp, yProp, useSolutionIndex }) => {
-  if (!xProp || xProp === yProp) {
+const getTransFormData = ({ xProp, yProp, useSolutionIndex, xFactor = 1 }) => {
+  if (!xProp || xProp === "createdSolutions") {
     return compose(
-      sortSolutions(["createdSolutions"], ["asc"]),
+      sortSolutions([xProp], ["asc"]),
+      filterBetterQuality,
       (solutions) =>
         solutions.map((sol, i) => ({
           ...sol,
-          x: useSolutionIndex ? i : get(sol, "createdSolutions"),
+          x: useSolutionIndex ? i : get(sol, "createdSolutions") * xFactor,
           y: get(sol, yProp),
           size: 1
         })),
@@ -81,8 +99,8 @@ const getTransFormData = ({ xProp, yProp, useSolutionIndex }) => {
   );
 };
 
-const getXTitle = ({ xProp, yProp, useSolutionIndex }) => {
-  if (xProp === yProp){
+const getXTitle = ({ xProp, useSolutionIndex }) => {
+  if (!xProp || xProp === "createdSolutions") {
     if (useSolutionIndex){
       return "solution #"
     }
@@ -93,11 +111,14 @@ const getXTitle = ({ xProp, yProp, useSolutionIndex }) => {
 
 const App = () => {
   const [instance, setInstance] = useState(null);
+  const [parameters, setParameters] = useState(null);
   const [solutions, setSolutions] = useState([]);
+
+  console.log({ instance, parameters });
 
   useEffect(() => {
     if (!instance) {
-      fetch("nug12b-s10k.jsonlog").then((response) =>
+      fetch("nug15b-s10k-3.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
@@ -106,8 +127,12 @@ const App = () => {
               const { type, ...rest } = parsed;
               if (type === "instance") {
                 setInstance(rest.instance);
+              } else if (type === "parameters") {
+                setParameters(rest.parameters);
               } else if (type === "solution") {
-                solutions.push(rest);
+                if (rest.createdSolutions > 0){
+                  solutions.push(rest);
+                }
               }
             }
           });
@@ -123,11 +148,13 @@ const App = () => {
     "singleFactoryFailure",
   ];
   let plots = [];
+  plots.push({ xProp: "createdSolutions", yProp: "quality", type: "LineSeries", xFactor: parameters?.agents })
   solutionProps.forEach((a) => {
     solutionProps.forEach((b) => {
-      plots.push({ xProp: a, yProp: b });
-      if (a===b){
-        plots.push({ xProp: a, yProp: b, useSolutionIndex: true });
+      if (a === b){
+        plots.push({ xProp: "createdSolutions", yProp: b, type: "LineSeries", xFactor: parameters?.agents });
+      } else {
+        plots.push({ xProp: a, yProp: b });
       }
     });
   });
@@ -155,7 +182,7 @@ const App = () => {
                   xTitle={getXTitle(options)}
                   yTitle={options.yProp}
                   key={`${options.xProp}_${options.useSolutionIndex}`}
-                  type={options.yProp === options.xProp ? "MarkSeries" : undefined}
+                  type={options.type}
                   data={getTransFormData(options)(solutions)}
                 />
               )),
