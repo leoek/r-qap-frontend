@@ -118,7 +118,7 @@ const App = () => {
 
   useEffect(() => {
     if (!instance) {
-      fetch("nug15b-s10k-3.jsonlog").then((response) =>
+      fetch("nug12b-s10k-2.jsonlog").then((response) =>
         response.text().then((txt) => {
           const solutions = [];
           txt.split("\n").forEach((line) => {
